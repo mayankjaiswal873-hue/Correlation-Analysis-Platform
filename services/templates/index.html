@@ -1,0 +1,190 @@
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard | CorrelationLab{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div>
+        <p class="eyebrow">DATA SCIENCE WORKSPACE</p>
+        <h1>Correlation Analysis Dashboard</h1>
+        <p class="hero-text">
+            Generate synthetic data, explore relationships and understand
+            patterns through interactive visual analytics.
+        </p>
+    </div>
+    <a class="btn btn-light" href="{{ url_for('download') }}">Download CSV</a>
+</section>
+
+<section class="stats-grid">
+    <article class="stat-card">
+        <p>Dataset rows</p>
+        <h2>{{ rows }}</h2>
+        <span>Records analyzed</span>
+    </article>
+    <article class="stat-card">
+        <p>Numeric variables</p>
+        <h2>{{ columns|length }}</h2>
+        <span>Columns included</span>
+    </article>
+    <article class="stat-card">
+        <p>Data source</p>
+        <h2 class="source-value">{{ source }}</h2>
+        <span>Current analysis</span>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">01 / DATA INPUT</p>
+            <h2>Generate synthetic data</h2>
+            <p>Create a new sample dataset for experimentation.</p>
+        </div>
+    </div>
+    <form method="POST" action="{{ url_for('generate') }}" class="inline-form">
+        <label for="rows">Number of rows (20–1000)</label>
+        <input id="rows" name="rows" type="number"
+               min="20" max="1000" value="{{ rows }}" required>
+        <button class="btn btn-primary" type="submit">Generate &amp; Analyze</button>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">02 / YOUR DATA</p>
+            <h2>Upload a CSV file</h2>
+            <p>Analyze your own numeric dataset. Maximum upload size: 5 MB.</p>
+        </div>
+    </div>
+    <form method="POST" action="{{ url_for('upload') }}"
+          enctype="multipart/form-data" class="inline-form upload-form">
+        <input type="file" name="file" accept=".csv" required>
+        <button class="btn btn-secondary" type="submit">Upload &amp; Analyze</button>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">03 / VISUAL ANALYTICS</p>
+            <h2>Correlation heatmap</h2>
+            <p>Values closer to +1 or -1 indicate stronger linear relationships.</p>
+        </div>
+    </div>
+    <div id="heatmap" class="chart-area"></div>
+</section>
+
+<section class="panel">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">04 / RELATIONSHIP EXPLORER</p>
+            <h2>Interactive scatter plot</h2>
+            <p>Explore how two numeric variables move together.</p>
+        </div>
+    </div>
+    <div id="scatter" class="chart-area"></div>
+</section>
+
+<section class="panel">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">05 / INTERPRETATION</p>
+            <h2>Automated insights</h2>
+            <p>Rule-based summaries of the strongest observed relationships.</p>
+        </div>
+    </div>
+
+    {% if insights %}
+        <div class="insight-list">
+            {% for item in insights %}
+                <article class="insight-card">
+                    <div class="insight-top">
+                        <h3>{{ item.first }} <span>↔</span> {{ item.second }}</h3>
+                        <span class="correlation-badge">r = {{ "%.2f"|format(item.value) }}</span>
+                    </div>
+                    <p>{{ item.description }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No interpretable relationships were found.</p>
+    {% endif %}
+</section>
+
+<section class="panel">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">06 / DATA PREVIEW</p>
+            <h2>First 10 rows</h2>
+            <p>A preview of the numeric data used in the analysis.</p>
+        </div>
+    </div>
+    <div class="table-scroll">{{ data_table|safe }}</div>
+</section>
+
+<section class="panel">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">07 / CORRELATION MATRIX</p>
+            <h2>Numerical results</h2>
+        </div>
+    </div>
+    <div class="table-scroll">{{ corr_table|safe }}</div>
+</section>
+
+<section class="panel">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">08 / ACTIVITY</p>
+            <h2>Recent analysis history</h2>
+            <p>Your latest analyses saved to the local SQLite database.</p>
+        </div>
+    </div>
+
+    {% if history %}
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Source</th>
+                        <th>Rows</th>
+                        <th>Columns</th>
+                        <th>Summary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in history %}
+                    <tr>
+                        <td>{{ record.created_at }}</td>
+                        <td>{{ record.source }}</td>
+                        <td>{{ record.row_count }}</td>
+                        <td>{{ record.column_count }}</td>
+                        <td>{{ record.summary }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No analysis history yet.</p>
+    {% endif %}
+</section>
+
+<script>
+    const heatmapFigure = {{ heatmap|safe }};
+    const scatterFigure = {{ scatter|safe }};
+
+    Plotly.newPlot("heatmap", heatmapFigure.data, heatmapFigure.layout, {
+        responsive: true,
+        displaylogo: false
+    });
+
+    Plotly.newPlot("scatter", scatterFigure.data, scatterFigure.layout, {
+        responsive: true,
+        displaylogo: false
+    });
+</script>
+{% endblock %}

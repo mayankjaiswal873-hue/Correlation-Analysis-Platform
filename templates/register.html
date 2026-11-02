@@ -1,0 +1,37 @@
+
+{% extends "base.html" %}
+
+{% block title %}Register | CorrelationLab{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <section class="auth-card">
+        <p class="eyebrow">CREATE YOUR WORKSPACE</p>
+        <h1>Register</h1>
+        <p>Create an account to access the analysis dashboard.</p>
+
+        <form method="POST" class="auth-form">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text"
+                   minlength="3" maxlength="30" autocomplete="username" required>
+
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password"
+                   minlength="8" autocomplete="new-password" required>
+
+            <label for="confirm_password">Confirm password</label>
+            <input id="confirm_password" name="confirm_password" type="password"
+                   minlength="8" autocomplete="new-password" required>
+
+            <button class="btn btn-primary btn-full" type="submit">
+                Create account
+            </button>
+        </form>
+
+        <p class="auth-switch">
+            Already registered?
+            <a href="{{ url_for('login') }}">Sign in</a>
+        </p>
+    </section>
+</div>
+{% endblock %}
